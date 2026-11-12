@@ -1,4 +1,4 @@
-// Theme toggle: respects saved choice, otherwise the operating system setting.
+// Theme toggle: follows the operating system setting until the reader chooses (per page view).
 (function () {
   var root = document.documentElement;
   var btn = document.querySelector('[data-theme-toggle]');
@@ -11,7 +11,6 @@
   btn.addEventListener('click', function () {
     var next = isDark() ? 'light' : 'dark';
     root.dataset.theme = next;
-    try { localStorage.setItem('theme', next); } catch (e) {}
     sync();
   });
   sync();
