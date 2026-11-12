@@ -2,7 +2,7 @@
 
 This is a project for Library & Information Sciences classes. I would direct anyone looking for something more seriously useful to [elfdict.com](https://www.elfdict.com).
 
-I created this to meet the criteria of three assignments:
+I, James Waller, created this to meet the criteria of three assignments:
 Two assignments for Dr. Wanying Zhao's Information Technologies course (LS 560-921), a basic website and a Python database project.
 The third assignment for Instructor Melissa Fortson's Universal Design for Information Technologies course (LS-581-920), an assignment to create an accessible website (see later WCAG statement for relevance).
 
