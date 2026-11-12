@@ -51,7 +51,7 @@
     shown.forEach(function (s) {
       var x = s[1], L = data.langs[x[3]];
       var li = el('li');
-      var a = el('a', { href: 'entry/' + x[0] + '.html' });
+      var a = el('a', { href: x[6] });
       if (x[5] === 'root') { a.appendChild(el('span', { class: 'sym', 'aria-hidden': 'true' }, '√')); a.appendChild(el('span', { class: 'visually-hidden' }, 'root ')); }
       else if (x[3] === 'p') { a.appendChild(el('span', { class: 'sym', 'aria-hidden': 'true' }, '✶')); a.appendChild(el('span', { class: 'visually-hidden' }, 'primitive form ')); }
       a.appendChild(el('span', { lang: L[1], class: 'elv' }, x[1]));

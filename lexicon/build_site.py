@@ -102,6 +102,15 @@ ATTEST = defaultdict(list)
 for r in conn.execute("SELECT * FROM attestations ORDER BY att_id"):
     ATTEST[r["entry_id"]].append(dict(r))
 
+# Entries with more than two distinct links (or long commentary) get their own
+# page. Shorter entries are published in full on their alphabetical index page.
+# This keeps the site under 5,000 files for hosting while losing no data.
+_DEG = defaultdict(set)
+for _f, _t in conn.execute("SELECT from_id, to_id FROM links"):
+    _DEG[_f].add(_t)
+    _DEG[_t].add(_f)
+FULL = {i for i, x in ENTRIES.items() if len(_DEG[i]) > 2 or len(x["notes_html"] or "") > 1500}
+
 LANG_COUNTS = {r[0]: r[1] for r in
                conn.execute("SELECT lang_code, COUNT(*) FROM entries GROUP BY lang_code")}
 STATS = {
@@ -120,6 +129,21 @@ def sort_by_form(ids):
 def letter_of(entry):
     k = entry["sort_key"][:1]
     return k if k.isalpha() and k.isascii() else "other"
+
+
+def index_page(eid):
+    x = ENTRIES[eid]
+    if LANG_COUNTS[x["lang_code"]] > 400:
+        return f'lang/{x["lang_code"]}-{letter_of(x)}.html'
+    return f'lang/{x["lang_code"]}.html'
+
+
+def href(eid, pre):
+    return f"{pre}entry/{eid}.html" if eid in FULL else f"{pre}{index_page(eid)}#w{eid}"
+
+
+def iri(eid, pre):
+    return f"{pre}entry/{eid}.html#entry" if eid in FULL else f"{pre}{index_page(eid)}#w{eid}"
 
 
 # ---------------------------------------------------------------------------
@@ -141,7 +165,7 @@ def headword(entry, tag="span"):
 
 def word_link(eid, pre, show_lang=True, show_gloss=True):
     x = ENTRIES[eid]
-    parts = [f'<a href="{pre}entry/{eid}.html">{headword(x)}</a>']
+    parts = [f'<a href="{href(eid, pre)}">{headword(x)}</a>']
     if show_lang:
         parts.append(f'<span class="lang-name">{e(LANGS[x["lang_code"]]["name"])}</span>')
     if show_gloss and x["gloss"]:
@@ -229,7 +253,7 @@ def convert_notes(raw, pre):
         inner = m.group(3)
         if eid:
             lang = LANGS[key[0]]["bcp47"]
-            return f'<a href="{pre}entry/{eid}.html" lang="{lang}">{inner}</a>'
+            return f'<a href="{href(eid, pre)}" lang="{lang}">{inner}</a>'
         return inner
     out = A_LV.sub(repl, raw)
     out = A_HREF.sub(lambda m: f'href="{urljoin(ELDAMO_BASE, m.group(1))}"', out)
@@ -333,13 +357,13 @@ def lang_iri(code, pre):
 
 def entry_jsonld(eid, pre):
     x = ENTRIES[eid]
-    iri = lambda i: f"{pre}entry/{i}.html#entry"
+    node_base = f"{pre}entry/{eid}.html" if eid in FULL else f"{pre}{index_page(eid)}#w{eid}-"
     node = {
-        "@id": iri(eid),
+        "@id": iri(eid, pre),
         "@type": "ontolex:Etymon" if x["speech"] == "root" else "ontolex:LexicalEntry",
         "rdfs:label": {"@value": x["form"], "@language": LANGS[x["lang_code"]]["bcp47"]},
         "ontolex:canonicalForm": {
-            "@id": f"{pre}entry/{eid}.html#form",
+            "@id": (node_base + "#form") if eid in FULL else node_base + "form",
             "@type": "ontolex:Form",
             "ontolex:writtenRep": {"@value": x["form"], "@language": LANGS[x["lang_code"]]["bcp47"]},
         },
@@ -348,7 +372,7 @@ def entry_jsonld(eid, pre):
     }
     if x["gloss"]:
         node["ontolex:sense"] = {
-            "@id": f"{pre}entry/{eid}.html#sense",
+            "@id": (node_base + "#sense") if eid in FULL else node_base + "sense",
             "@type": "ontolex:LexicalSense",
             "skos:definition": {"@value": x["gloss"], "@language": "en"},
         }
@@ -361,7 +385,7 @@ def entry_jsonld(eid, pre):
     for rel, prop in props.items():
         targets = sort_by_form(OUT_LINKS[eid][rel])
         if targets:
-            vals = [{"@id": iri(t)} for t in targets]
+            vals = [{"@id": iri(t, pre)} for t in targets]
             if prop == "rdfs:seeAlso":
                 vals = [node["rdfs:seeAlso"]] + vals
             node[prop] = vals
@@ -380,8 +404,7 @@ def build_entry(eid):
     pre = "../"
     x = ENTRIES[eid]
     L = LANGS[x["lang_code"]]
-    letter = letter_of(x)
-    lang_page = f'lang/{x["lang_code"]}-{letter}.html' if LANG_COUNTS[x["lang_code"]] > 400 else f'lang/{x["lang_code"]}.html'
+    lang_page = index_page(eid)
     crumbs = breadcrumbs([("index.html", "Home"), ("browse.html", "Browse"),
                           (lang_page, e(L["name"])), (None, e(x["form"]))], pre)
 
@@ -505,6 +528,51 @@ def family_tree(pre, code=None):
     return f'<ul class="family">{"".join(items)}</ul>'
 
 
+def short_entry(eid, pre, level):
+    """A complete, compact entry shown inline on an index page."""
+    x = ENTRIES[eid]
+    L = LANGS[x["lang_code"]]
+    h = f"h{level}"
+    meta = [e(POS_LABELS.get(x["speech"], x["speech"] or ""))]
+    if x["cat_id"]:
+        meta.append(e(CATS[x["cat_id"]]["label"]))
+    rows = []
+    rel_names = [("derived_from", "From", False), ("has_element", "Built from", False),
+                 ("cognate", "Cognate", True), ("related", "Related", True), ("see_also", "See also", True)]
+    for rel, label, sym in rel_names:
+        ids = OUT_LINKS[eid][rel] + (IN_LINKS[eid][rel] if sym else [])
+        if ids:
+            rows.append(f"<div><dt>{label}</dt><dd>" + "; ".join(word_link(i, pre) for i in sort_by_form(ids)) + "</dd></div>")
+    for rel, label in [("derived_from", "Derived words"), ("has_element", "Used in")]:
+        ids = IN_LINKS[eid][rel]
+        if ids:
+            rows.append(f"<div><dt>{label}</dt><dd>" + "; ".join(word_link(i, pre) for i in sort_by_form(ids)) + "</dd></div>")
+    if x["mark"]:
+        desc = "; ".join(MARKS[m] for m in sorted(MARKS, key=len, reverse=True)
+                         if m in x["mark"] and not (m == "*" and "**" in x["mark"])) or "editorial mark in Eldamo"
+        rows.append(f'<div><dt>Status</dt><dd><span aria-hidden="true">{e(x["mark"])}</span> {e(desc)}</dd></div>')
+    extra = ""
+    notes = convert_notes(x["notes_html"], pre)
+    if notes:
+        extra += f'<details><summary>Notes<span class="visually-hidden"> on {e(x["form"])}</span></summary><div class="notes">{notes}</div></details>'
+    atts = ATTEST[eid]
+    if atts:
+        lis = "".join(
+            f'<li><span lang="{L["bcp47"]}" class="elv">{e(a["form"])}</span>'
+            f'{" “" + e(a["gloss"]) + "”" if a["gloss"] else ""}{" (" + e(a["inflection"]) + ")" if a["inflection"] else ""}'
+            f' — {e(SOURCES.get(a["source_prefix"], a["source_prefix"]))} <span class="cite">{e(a["source"])}</span></li>'
+            for a in atts)
+        extra += (f'<details><summary>{len(atts)} attestation{"s" if len(atts) != 1 else ""}'
+                  f'<span class="visually-hidden"> of {e(x["form"])}</span></summary><ul class="att-list">{lis}</ul></details>')
+    dl = f'<dl class="mini">{"".join(rows)}</dl>' if rows else ""
+    gloss = f' <span class="gloss">“{e(x["gloss"])}”</span>' if x["gloss"] else ""
+    return (f'<article class="short-entry" id="w{eid}" aria-labelledby="h-w{eid}">'
+            f'<{h} id="h-w{eid}" class="short-head">{headword(x)}</{h}>'
+            f'<p class="short-meta">{" · ".join(meta)}{gloss}</p>{dl}{extra}'
+            f'<p class="short-src"><a href="{ELDAMO_WORD.format(eid)}">Eldamo entry<span class="visually-hidden"> for {e(x["form"])}</span></a></p>'
+            f'</article>')
+
+
 def build_lang_pages():
     for code, L in LANGS.items():
         ids = [i for i, x in ENTRIES.items() if x["lang_code"] == code]
@@ -526,9 +594,22 @@ def build_lang_pages():
                            f'<span class="visually-hidden">, {len(letters[k])} entries</span></a></li>')
             return f'<nav aria-label="Alphabetical index" class="letters"><ul>{"".join(lis)}</ul></nav>'
 
-        def word_list(id_list):
-            return '<ul class="word-list index-list">' + "".join(
-                f"<li>{word_link(i, pre, show_lang=False)}</li>" for i in id_list) + "</ul>"
+        def word_list(id_list, level):
+            items = []
+            for i in id_list:
+                if i in FULL:
+                    items.append(f'<li class="full">{word_link(i, pre, show_lang=False)}'
+                                 f' <span class="count">full entry</span></li>')
+                else:
+                    items.append(f"<li>{short_entry(i, pre, level)}</li>")
+            return '<ul class="word-list index-list">' + "".join(items) + "</ul>"
+
+        def page_ld(id_list):
+            graph = [entry_jsonld(i, pre) for i in id_list if i not in FULL]
+            if not graph:
+                return ""
+            txt = json.dumps({"@context": CONTEXT, "@graph": graph}, ensure_ascii=False)
+            return f'<script type="application/ld+json">{txt.replace("</", "<\\/")}</script>'
 
         intro = (f'<h1>{e(L["name"])}</h1><p class="lede">{e(L["description"])}. '
                  f'{len(ids):,} entries.</p>')
@@ -543,14 +624,14 @@ def build_lang_pages():
                 label = "Other" if k == "other" else k.upper()
                 body = (breadcrumbs(crumbs + [(f"lang/{code}.html", e(L["name"])), (None, label)], pre) +
                         f'<h1>{e(L["name"])}: {label}</h1>'
-                        f'<p class="lede">{len(letters[k]):,} entries.</p>' + letter_nav(k) + word_list(letters[k]))
-                page(f"lang/{code}-{k}.html", f'{L["name"]}: {label}', body, pre)
+                        f'<p class="lede">{len(letters[k]):,} entries. Words with many links have their own page; shorter entries are shown in full below.</p>' + letter_nav(k) + word_list(letters[k], 2))
+                page(f"lang/{code}-{k}.html", f'{L["name"]}: {label}', body, pre, head_extra=page_ld(letters[k]))
         else:
             parts = [breadcrumbs(crumbs + [(None, e(L["name"]))], pre), intro, letter_nav()]
             for k in order:
                 label = "Other" if k == "other" else k.upper()
-                parts.append(f'<section aria-labelledby="letter-{k}"><h2 id="letter-{k}">{label}</h2>{word_list(letters[k])}</section>')
-            page(f"lang/{code}.html", L["name"], "".join(parts), pre)
+                parts.append(f'<section aria-labelledby="letter-{k}"><h2 id="letter-{k}">{label}</h2>{word_list(letters[k], 3)}</section>')
+            page(f"lang/{code}.html", L["name"], "".join(parts), pre, head_extra=page_ld(ids))
 
 
 def build_static_pages():
@@ -619,7 +700,7 @@ def build_static_pages():
     for i in sorted(roots, key=lambda i: ENTRIES[i]["sort_key"]):
         x = ENTRIES[i]
         n_der = len(set(IN_LINKS[i]["derived_from"]))
-        rows.append(f'<tr><th scope="row"><a href="entry/{i}.html">{headword(x)}</a></th>'
+        rows.append(f'<tr><th scope="row"><a href="{href(i, "")}">{headword(x)}</a></th>'
                     f'<td>{e(x["gloss"] or "—")}</td><td class="num">{n_der}</td></tr>')
     body = f"""<h1>Primitive Elvish roots</h1>
 <p class="lede">Roots are the building blocks of Tolkien’s Elvish vocabulary. Tolkien wrote them in capital letters, marked here with √. Select a root to see the words that grew from it.</p>
@@ -671,7 +752,7 @@ def build_static_pages():
 <section aria-labelledby="model"><h2 id="model">Data model</h2>
 <p>Entries follow the W3C <a href="https://www.w3.org/2016/05/ontolex/">OntoLex-Lemon</a> model for lexical resources. Each word has three identifiers on its page:</p>
 <ul>
-<li><code>entry/ID.html#entry</code> is the word itself (an <code>ontolex:LexicalEntry</code>, or an <code>ontolex:Etymon</code> for roots).</li>
+<li><code>entry/ID.html#entry</code> is the word itself (an <code>ontolex:LexicalEntry</code>, or an <code>ontolex:Etymon</code> for roots). Shorter entries that appear on an index page use the identifier <code>lang/PAGE.html#wID</code> instead.</li>
 <li><code>#form</code> is its written form, tagged with a language code.</li>
 <li><code>#sense</code> is its English meaning.</li>
 </ul>
@@ -718,7 +799,7 @@ def build_static_pages():
 <p>Two Python scripts, using only the standard library, turn the data into this website:</p>
 <ol class="steps">
 <li><strong><code>build_db.py</code></strong> reads Eldamo’s XML and loads it into a relational SQLite database. Eldamo records etymological links in two ways: on a word (by language and form) and on individual citations (by source reference). The script resolves both into one table of word-to-word links and keeps the citation as evidence.</li>
-<li><strong><code>build_site.py</code></strong> queries the database and writes one HTML page per entry, the language indexes, the search index and the RDF exports.</li>
+<li><strong><code>build_site.py</code></strong> queries the database and writes the website. Words with more than two etymological links get their own page; shorter entries are published in full on their alphabetical index page. It also writes the search index and the RDF exports.</li>
 </ol>
 </section>
 
@@ -815,7 +896,7 @@ def build_exports():
     shutil.copy(DB_PATH, data / "lexicon.db")
 
     # Search index (compact arrays).
-    index = [[i, x["form"], x["sort_key"], x["lang_code"], x["gloss"] or "", x["speech"] or ""]
+    index = [[i, x["form"], x["sort_key"], x["lang_code"], x["gloss"] or "", x["speech"] or "", href(i, "")]
              for i, x in ENTRIES.items()]
     meta = {c: [L["name"], L["bcp47"]] for c, L in LANGS.items()}
     (data / "search-index.json").write_text(
@@ -857,25 +938,27 @@ def build_exports():
              "cognate": "eld:cognateWith", "related": "eld:relatedTo", "see_also": "rdfs:seeAlso"}
     for i, x in ENTRIES.items():
         tag = LANGS[x["lang_code"]]["bcp47"]
-        base = f"<../entry/{i}.html"
+        node = iri(i, "../")
+        form_iri = node.replace("#entry", "#form") if i in FULL else node + "-form"
+        sense_iri = node.replace("#entry", "#sense") if i in FULL else node + "-sense"
         typ = "ontolex:Etymon" if x["speech"] == "root" else "ontolex:LexicalEntry"
-        t = [f"{base}#entry> a {typ}",
+        t = [f"<{node}> a {typ}",
              f"    rdfs:label {ttl_literal(x['form'], tag)}",
-             f"    ontolex:canonicalForm {base}#form>",
+             f"    ontolex:canonicalForm <{form_iri}>",
              f"    dct:language <{lang_iri(x['lang_code'], '../')}>",
              f"    rdfs:seeAlso <{ELDAMO_WORD.format(i)}>"]
         if x["speech"] in LEXINFO_POS:
             t.append(f"    lexinfo:partOfSpeech lexinfo:{LEXINFO_POS[x['speech']]}")
         if x["gloss"]:
-            t.append(f"    ontolex:sense {base}#sense>")
+            t.append(f"    ontolex:sense <{sense_iri}>")
         for rel, prop in props.items():
             targets = sort_by_form(OUT_LINKS[i][rel])
             if targets:
-                t.append(f"    {prop} " + ", ".join(f"<../entry/{k}.html#entry>" for k in targets))
+                t.append(f"    {prop} " + ", ".join(f"<{iri(k, '../')}>" for k in targets))
         lines.append(" ;\n".join(t) + " .")
-        lines.append(f"{base}#form> a ontolex:Form ; ontolex:writtenRep {ttl_literal(x['form'], tag)} .")
+        lines.append(f"<{form_iri}> a ontolex:Form ; ontolex:writtenRep {ttl_literal(x['form'], tag)} .")
         if x["gloss"]:
-            lines.append(f"{base}#sense> a ontolex:LexicalSense ; skos:definition {ttl_literal(x['gloss'], 'en')} .")
+            lines.append(f"<{sense_iri}> a ontolex:LexicalSense ; skos:definition {ttl_literal(x['gloss'], 'en')} .")
         lines.append("")
     (data / "lexicon.ttl").write_text("\n".join(lines), encoding="utf-8")
 
@@ -887,7 +970,7 @@ def main():
     shutil.copytree(STATIC, OUT / "assets")
     build_static_pages()
     build_lang_pages()
-    for eid in ENTRIES:
+    for eid in FULL:
         build_entry(eid)
     build_exports()
     n = sum(1 for _ in OUT.rglob("*.html"))

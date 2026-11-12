@@ -5,7 +5,7 @@ An accessible, linked-data dictionary of J.R.R. Tolkien's late-period Elvish lan
 - 7,877 dictionary entries in 11 languages
 - 12,613 word-to-word links (derivations, compound elements, cognates, related words)
 - 27,457 citations to Tolkien's writings
-- One web page per entry, published with embedded JSON-LD (OntoLex-Lemon)
+- Words with more than two links get their own page. Shorter entries appear in full on the alphabetical index pages. All entries carry embedded JSON-LD (OntoLex-Lemon)
 
 Lexical data: [Eldamo](https://eldamo.org) by Paul Strack, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
@@ -58,7 +58,7 @@ SELECT ... ;
 
 ## Linked data
 
-- Each entry has a hash identifier, `entry/<id>.html#entry`, kept separate from the page that describes it. It also has `#form` and `#sense` nodes.
+- Each entry has a hash identifier, kept separate from the page that describes it: `entry/<id>.html#entry` for full entries, and `lang/<page>.html#w<id>` for short entries on index pages. Each also has form and sense nodes.
 - Model: OntoLex-Lemon (`ontolex:LexicalEntry`, `ontolex:Etymon` for roots, `ontolex:Form`, `ontolex:LexicalSense`), LexInfo parts of speech, `decomp:subterm` for compound elements, and three project properties: `eld:derivedFrom`, `eld:cognateWith` and `eld:relatedTo` (defined on `linked-data.html`).
 - Every entry links to its Eldamo page with `rdfs:seeAlso`. Quenya and Sindarin link to Lexvo language IRIs.
 - IRIs are relative, so the data resolves wherever the site is hosted.

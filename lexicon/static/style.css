@@ -200,3 +200,21 @@ summary { cursor: pointer; font-weight: 600; color: var(--accent); padding: .3re
 .steps li { margin-bottom: .75rem; }
 
 .site-footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--muted); font-size: .92rem; background: var(--surface); }
+
+/* Short entries shown inline on index pages */
+.index-list { columns: auto; }
+.index-list li.full { padding: .5rem 0; }
+.short-entry { padding: .4rem 0 .2rem; }
+.short-head { font-family: var(--font-body); font-size: 1.1rem; margin: 0; display: inline; }
+.short-meta { display: inline; margin: 0 0 0 .5rem; color: var(--muted); font-size: .92rem; }
+.short-meta .gloss { color: var(--ink); font-size: 1rem; }
+.mini { margin: .35rem 0 0; font-size: .95rem; }
+.mini div { display: flex; gap: .5rem; flex-wrap: wrap; }
+.mini dt { color: var(--muted); min-width: 6.5rem; }
+.mini dd { margin: 0; flex: 1 1 16rem; }
+.short-entry details { margin: .3rem 0; font-size: .95rem; }
+.short-entry summary { font-weight: 400; font-size: .92rem; }
+.att-list { margin: .3rem 0; padding-left: 1.2rem; }
+.short-src { margin: .2rem 0 0; font-size: .85rem; }
+:target { scroll-margin-top: 1rem; }
+.short-entry:target { background: var(--surface); outline: 2px solid var(--gold); outline-offset: 4px; border-radius: 2px; }
