@@ -50,6 +50,8 @@ Included editor configuration (`.vscode/`):
 ### Project layout
 
 ```
+docs/
+  CONVERSATION.md      handoff summary and transcript of how the project was planned and built
 data/
   eldamo-data.xml      source data (Eldamo 0.8.14, CC BY 4.0)
   lexicon.db           SQLite database built from it (committed so the site builds without step 1)
