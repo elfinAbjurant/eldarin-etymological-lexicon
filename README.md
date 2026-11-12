@@ -1,5 +1,7 @@
 # Eldarin Etymological Lexicon
 
+This is a project for Library & Information Sciences classes. I would direct anyone looking for something more seriously useful to [elfdict.com](https://www.elfdict.com).
+
 An accessible, linked-data dictionary of J.R.R. Tolkien's late-period Elvish languages (Primitive Elvish, Quenya, Sindarin, Telerin and their relatives). It focuses on how words are connected: their roots, derivations, compounds and cognates.
 
 - 7,877 dictionary entries in 11 languages
