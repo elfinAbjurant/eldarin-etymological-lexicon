@@ -26,8 +26,66 @@ python3 lexicon/explore.py galadh --lang s  # look up a word and its etymology
 python3 -m http.server -d site 8000         # preview at http://localhost:8000
 ```
 
+Or use `make all`, `make check` and `make serve` (run `make help` for the full list).
+
 To refresh the source data:
 `curl -L -o data/eldamo-data.xml https://raw.githubusercontent.com/pfstrack/eldamo/master/src/data/eldamo-data.xml`
+
+## Developing in Code OSS / VS Code
+
+Open the project folder (`code-oss .` or File > Open Folder). Requirements: Python 3.10 or newer. Nothing needs installing to build; `rdflib` is optional for RDF checks.
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate   # optional
+pip install -r requirements-dev.txt                  # optional: rdflib for tools/check_site.py
+```
+
+Included editor configuration (`.vscode/`):
+
+- **Tasks** (Terminal > Run Task, or Ctrl+Shift+B for the default build): Build database, Build site, Build site (one page per entry), Build all, Check site, Serve site, Explore a word, Database statistics, Update Eldamo data
+- **Debug configurations** for each script (Run and Debug panel)
+- **Recommended extensions** from Open VSX: Python and debugpy, SQLite Viewer (browse `data/lexicon.db`), RDF syntax highlighting for `.ttl`, and the axe Accessibility Linter
+- Settings that keep `site/` and the 30 MB XML out of search and file watching
+
+### Project layout
+
+```
+data/
+  eldamo-data.xml      source data (Eldamo 0.8.14, CC BY 4.0)
+  lexicon.db           SQLite database built from it (committed so the site builds without step 1)
+lexicon/
+  build_db.py          XML -> SQLite: schema, loading, link resolution
+  build_site.py        SQLite -> static site: HTML templates, JSON-LD, Turtle, CSV, search index
+  explore.py           command-line lookups and recursive etymology queries
+  static/              style.css, site.js (theme toggle), search.js (client-side search)
+tools/
+  check_site.py        link, search-index and RDF validation for the generated site
+site/                  generated output (git-ignored; rebuild any time)
+```
+
+### Page layout modes
+
+By default, entries with more than two links (or long notes) get their own page in `entry/`, and shorter entries are rendered in full on their letter index page in `lang/`. This keeps the site at about 3,800 files, under the 5,000-file limit of some preview hosts. For hosts without that limit (GitHub Pages, Netlify, a university server), build one page per entry:
+
+```bash
+python3 lexicon/build_site.py --all-pages    # or: make site-all, or ELDARIN_ALL_PAGES=1
+```
+
+The cutoff is the `FULL` set near the top of `build_site.py`.
+
+### Where to change things
+
+- Which languages are included, with their names, language tags and descriptions: `LANGUAGES` in `build_db.py` (keyed by Eldamo language code). Rebuild the database afterwards
+- Which word types are excluded: `EXCLUDED_SPEECH` in `build_db.py`
+- Page HTML in `build_site.py`: `page()` (shared header, navigation and footer), `build_entry()` (full entry pages), `short_entry()` (inline entries), `build_lang_pages()` (indexes) and `build_static_pages()` (home, browse, roots, search, about, accessibility, linked data)
+- Colours, fonts and themes: CSS custom properties at the top of `lexicon/static/style.css`
+- Linked-data vocabulary: `CONTEXT` and `entry_jsonld()` (JSON-LD) and `build_exports()` (Turtle, CSV, search index) in `build_site.py`
+
+After any change, run `make site check`, then reload the browser.
+
+### Publishing
+
+`site/` is plain static files with relative links, so it can be copied to any web host. For GitHub Pages, build with `--all-pages` and publish the `site/` folder (for example with a GitHub Actions workflow that runs `make site-all` and uploads `site/`).
 
 ## Database design
 
@@ -75,7 +133,7 @@ See `site/accessibility.html` for the full statement. Highlights:
 - Captioned data tables with header cells, inside keyboard-focusable scroll regions
 - Search results announced through an `aria-live` status message. Every page except live search works without JavaScript
 - Light and dark themes (following the system setting, with a toggle), visible focus, reduced-motion support, and reflow down to 320 px
-- Tested with axe-core (0 violations on 35 sampled pages in both themes), keyboard-only use, and 375 px and 1280 px layouts
+- Tested with axe-core (0 violations in both themes on 23 sampled pages, including core pages, random entries and letter indexes with inline entries), keyboard-only use, and 375 px and 1280 px layouts
 
 ## How this covers the three assignments
 

@@ -1,0 +1,10 @@
+{
+  // Keep generated output and the 30 MB source XML out of search and file watching.
+  "files.watcherExclude": { "**/site/**": true, "**/.venv/**": true },
+  "search.exclude": { "site/**": true, "data/eldamo-data.xml": true, "data/lexicon.db": true },
+  "files.associations": { "*.jsonld": "json" },
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "editor.rulers": [100],
+  "python.analysis.extraPaths": ["lexicon"]
+}

@@ -1,0 +1,3 @@
+# The build scripts need only the Python 3.10+ standard library.
+# Optional, for tools/check_site.py to parse the RDF exports:
+rdflib>=7

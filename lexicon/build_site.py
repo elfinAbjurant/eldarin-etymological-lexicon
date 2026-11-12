@@ -23,9 +23,11 @@ Usage: python3 lexicon/build_site.py
 import csv
 import html
 import json
+import os
 import re
 import shutil
 import sqlite3
+import sys
 from collections import defaultdict
 from pathlib import Path
 from urllib.parse import urljoin
@@ -109,7 +111,12 @@ _DEG = defaultdict(set)
 for _f, _t in conn.execute("SELECT from_id, to_id FROM links"):
     _DEG[_f].add(_t)
     _DEG[_t].add(_f)
-FULL = {i for i, x in ENTRIES.items() if len(_DEG[i]) > 2 or len(x["notes_html"] or "") > 1500}
+# Which entries get their own page. By default, only richly linked entries do, so the
+# site stays under the preview host's 5,000-file limit. Pass --all-pages (or set
+# ELDARIN_ALL_PAGES=1) for one page per entry, e.g. when hosting on GitHub Pages.
+ALL_PAGES = "--all-pages" in sys.argv or os.environ.get("ELDARIN_ALL_PAGES") == "1"
+FULL = set(ENTRIES) if ALL_PAGES else {
+    i for i, x in ENTRIES.items() if len(_DEG[i]) > 2 or len(x["notes_html"] or "") > 1500}
 
 LANG_COUNTS = {r[0]: r[1] for r in
                conn.execute("SELECT lang_code, COUNT(*) FROM entries GROUP BY lang_code")}
@@ -173,9 +180,18 @@ def word_link(eid, pre, show_lang=True, show_gloss=True):
     return " ".join(parts)
 
 
+CURRENT_ATTR = ' aria-current="page"'
+
+
+def ld_script(txt):
+    """Embed JSON-LD safely: escape "</" so the data cannot close the script element."""
+    safe = txt.replace("</", "<\\/")
+    return f'<script type="application/ld+json">{safe}</script>'
+
+
 def page(path, title, body, pre="", current=None, description="", head_extra=""):
     nav = "\n".join(
-        f'<li><a href="{pre}{href}"{" aria-current=\"page\"" if href == current else ""}>{label}</a></li>'
+        f'<li><a href="{pre}{href}"{CURRENT_ATTR if href == current else ""}>{label}</a></li>'
         for href, label in NAV)
     doc = f"""<!DOCTYPE html>
 <html lang="en">
@@ -508,7 +524,7 @@ def build_entry(eid):
   </div>
 </article>"""
     title = f'{x["form"]} ({L["name"]})'
-    head = f'<script type="application/ld+json">{ld_text.replace("</", "<\\/")}</script>'
+    head = ld_script(ld_text)
     desc = f'{L["name"]} {POS_LABELS.get(x["speech"], "")} “{x["gloss"] or ""}”: etymology, related words and attestations.'
     page(f"entry/{eid}.html", title, body, pre, description=desc, head_extra=head)
 
@@ -608,7 +624,7 @@ def build_lang_pages():
             if not graph:
                 return ""
             txt = json.dumps({"@context": CONTEXT, "@graph": graph}, ensure_ascii=False)
-            return f'<script type="application/ld+json">{txt.replace("</", "<\\/")}</script>'
+            return ld_script(txt)
 
         intro = (f'<h1>{e(L["name"])}</h1><p class="lede">{e(L["description"])}. '
                  f'{len(ids):,} entries.</p>')

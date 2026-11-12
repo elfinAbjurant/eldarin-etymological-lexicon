@@ -1,0 +1,10 @@
+{
+  // Run and Debug panel (requires a Python debugger extension)
+  "version": "0.2.0",
+  "configurations": [
+    { "name": "build_db.py", "type": "debugpy", "request": "launch", "program": "${workspaceFolder}/lexicon/build_db.py", "cwd": "${workspaceFolder}", "console": "integratedTerminal" },
+    { "name": "build_site.py", "type": "debugpy", "request": "launch", "program": "${workspaceFolder}/lexicon/build_site.py", "cwd": "${workspaceFolder}", "console": "integratedTerminal" },
+    { "name": "explore.py galadh", "type": "debugpy", "request": "launch", "program": "${workspaceFolder}/lexicon/explore.py", "args": ["galadh", "--lang", "s"], "cwd": "${workspaceFolder}", "console": "integratedTerminal" },
+    { "name": "check_site.py", "type": "debugpy", "request": "launch", "program": "${workspaceFolder}/tools/check_site.py", "cwd": "${workspaceFolder}", "console": "integratedTerminal" }
+  ]
+}

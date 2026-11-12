@@ -1,0 +1,10 @@
+{
+  // All available on Open VSX, the extension registry Code OSS uses.
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.debugpy",
+    "qwtel.sqlite-viewer",
+    "vemonet.stardog-rdf-grammars",
+    "deque-systems.vscode-axe-linter"
+  ]
+}

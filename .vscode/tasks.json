@@ -1,0 +1,79 @@
+{
+  // Terminal > Run Task... (Ctrl+Shift+B runs the default build task)
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build database",
+      "detail": "data/eldamo-data.xml -> data/lexicon.db",
+      "type": "shell",
+      "command": "python3 lexicon/build_db.py",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build site",
+      "detail": "data/lexicon.db -> site/",
+      "type": "shell",
+      "command": "python3 lexicon/build_site.py",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build site (one page per entry)",
+      "detail": "About 8,000 pages; for hosts without a file limit",
+      "type": "shell",
+      "command": "python3 lexicon/build_site.py --all-pages",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build all",
+      "dependsOn": ["Build database", "Build site"],
+      "dependsOrder": "sequence",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Check site",
+      "detail": "Links, search URLs and RDF exports",
+      "type": "shell",
+      "command": "python3 tools/check_site.py",
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Serve site",
+      "detail": "http://localhost:8000",
+      "type": "shell",
+      "command": "python3 -m http.server --directory site 8000",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Explore a word",
+      "type": "shell",
+      "command": "python3 lexicon/explore.py ${input:word} --lang ${input:lang}",
+      "problemMatcher": []
+    },
+    {
+      "label": "Database statistics",
+      "type": "shell",
+      "command": "python3 lexicon/explore.py --stats",
+      "problemMatcher": []
+    },
+    {
+      "label": "Update Eldamo data",
+      "detail": "Download the latest eldamo-data.xml",
+      "type": "shell",
+      "command": "curl -L -o data/eldamo-data.xml https://raw.githubusercontent.com/pfstrack/eldamo/master/src/data/eldamo-data.xml",
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    { "id": "word", "type": "promptString", "description": "Word (e.g. galadh)", "default": "galadh" },
+    {
+      "id": "lang",
+      "type": "pickString",
+      "description": "Language",
+      "options": ["s", "q", "p", "t", "nan", "aq", "van", "at", "os", "norths", "av"],
+      "default": "s"
+    }
+  ]
+}
