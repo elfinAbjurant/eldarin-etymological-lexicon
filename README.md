@@ -1,3 +1,11 @@
+## Class Assignment
+
+This is a project for Library & Information Sciences classes. I would direct anyone looking for something more seriously useful to [elfdict.com](https://www.elfdict.com).
+
+I created this to meet the criteria of three assignments:
+Two assignments for Dr. Wanying Zhao's Information Technologies course (LS ), a basic website and a Python database project.
+The third assignment for Instructor Melissa Fortson's Universal Design for Information Technologies course (LS-581-920), an assignment to create an accessible website (see later WCAG statement for relevance).
+
 # Eldarin Etymological Lexicon
 
 An accessible, linked-data dictionary of J.R.R. Tolkien's late-period Elvish languages (Primitive Elvish, Quenya, Sindarin, Telerin and their relatives). It focuses on how words are connected: their roots, derivations, compounds and cognates.
@@ -137,13 +145,6 @@ See `site/accessibility.html` for the full statement. Highlights:
 - Light and dark themes (following the system setting, with a toggle), visible focus, reduced-motion support, and reflow down to 320 px
 - Automated axe-core checks reported 0 violations in both themes on 23 sampled pages, including core pages, entries and letter indexes. Keyboard-only spot-checks cover the skip link, theme toggle and entry disclosures; the layout has been checked at 320 px with wide tables contained in their own scroll regions. Manual screen-reader testing remains to be done.
 
-## Class Assignment
-
-This is a project for Library & Information Sciences classes. I would direct anyone looking for something more seriously useful to [elfdict.com](https://www.elfdict.com).
-
-|---|---|
-| 1. Basic website (Library IT) | `site/`: multi-page site with navigation, browse indexes, search, about and data pages |
-| 2. Database with Python (Library IT) | `lexicon/build_db.py` (schema design, XML → SQL loading, link resolution), `lexicon/explore.py` (recursive SQL queries), `lexicon/build_site.py` (database-driven page generation) |
-| 3. Accessible web page (Universal Design) | Accessibility features throughout, plus `site/accessibility.html` (statement mapped to WCAG 2.2 success criteria) |
+Accessibility considerations and reviews 
 
 Not affiliated with the Tolkien Estate. Non-commercial educational project.
