@@ -1,152 +1,85 @@
-## Class Assignment
-
-This is a project for Library & Information Sciences classes. I would direct anyone looking for something more seriously useful to [elfdict.com](https://www.elfdict.com).
-
-I, James Waller, created this to meet the criteria of three assignments:
-
-Two assignments for Dr. Wanying Zhao's Information Technologies course (LS 560-921), a basic website and a Python database project.
-
-The third assignment for Instructor Melissa Fortson's Universal Design for Information Technologies course (LS-581-920), an assignment to create an accessible website (see later WCAG statement for relevance). This is where my project _may_ shine a little in comparison to elfdict, as accessibility and less reliance on javascript is a major focus.
-
 # Eldarin Etymological Lexicon
 
-An accessible, linked-data dictionary of J.R.R. Tolkien's late-period Elvish languages (Primitive Elvish, Quenya, Sindarin, Telerin and their relatives). It focuses on how words are connected: their roots, derivations, compounds and cognates.
+The Eldarin Etymological Lexicon is a digital humanities project for exploring Tolkien's late-period Elvish languages and the relationships between their words. It includes a searchable static website, a SQLite database built with Python, and linked-data exports.
 
-- 7,877 dictionary entries in 11 languages
-- 12,613 word-to-word links (derivations, compound elements, cognates, related words)
+**Website:** [elfinabjurant.github.io/eldarin-etymological-lexicon](https://elfinabjurant.github.io/eldarin-etymological-lexicon/)
+
+The site covers Primitive Elvish, Quenya, Sindarin, Telerin, and related languages. Its dataset contains:
+
+- 7,877 dictionary entries across 11 languages
+- 12,613 word-to-word relationships, including derivations, compounds, and cognates
 - 27,457 citations to Tolkien's writings
-- Words with more than two links get their own page. Shorter entries appear in full on the alphabetical index pages. All entries carry embedded JSON-LD (OntoLex-Lemon)
 
-Lexical data: [Eldamo](https://eldamo.org) by Paul Strack, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+Entries with extensive etymological links have dedicated pages. Shorter entries are displayed on alphabetical language indexes. Entries include embedded JSON-LD, and the complete dataset is also available as JSON-LD, Turtle, CSV, and SQLite downloads from the website.
+
+## Project and coursework
+
+This project was created for coursework in library and information science, with a focus on building a basic website and examining accessibility in a digital resource.
+
+## Data and attribution
+
+Lexical data comes from [Eldamo](https://eldamo.org) by Paul Strack, version 0.8.14, used under the [Creative Commons Attribution 4.0 license](https://creativecommons.org/licenses/by/4.0/). The data and generated files derived from it retain that attribution requirement. See [data/README.md](data/README.md) for details.
+
+The star illustration on the homepage is “Star” by acspike via Openclipart, released under CC0 1.0. The source and credit appear on the homepage and in the SVG metadata.
 
 ## How it works
 
-```
-data/eldamo-data.xml ──build_db.py──▶ data/lexicon.db ──build_site.py──▶ site/  (HTML + RDF + CSV)
-                                              │
-                                              └──explore.py (command-line queries)
+```text
+data/eldamo-data.xml -> lexicon/build_db.py -> data/lexicon.db
+data/lexicon.db -> lexicon/build_site.py -> site/ (HTML, RDF, CSV, search index)
 ```
 
-All three scripts use only the Python standard library (`sqlite3`, `xml.etree`, `json`, `csv`, `html`).
+The Python scripts use the standard library. The database stores languages, entries, attestations, sources, categories, and typed word relationships. The `links` view provides a consolidated view of etymological connections. `lexicon/explore.py` offers command-line lookups and recursive ancestry queries.
+
+The database schema and relationship model are described below and in `lexicon/build_db.py`. The generated site is plain static HTML, CSS, JavaScript, and data files; Python is used to build the database and generate the website, not run the published pages.
+
+## Build and preview
+
+Requirements: Python 3.10 or newer. No packages are required for the standard build. From the project directory:
 
 ```bash
-python3 lexicon/build_db.py                 # XML → SQLite (about 2 seconds)
-python3 lexicon/build_site.py               # SQLite → website in ./site
-python3 lexicon/explore.py galadh --lang s  # look up a word and its etymology
-python3 -m http.server -d site 8000         # preview at http://localhost:8000
+make all       # rebuild the SQLite database and static site
+make check     # check internal links, search URLs, and data exports
+make serve     # preview at http://localhost:8000
 ```
 
-Or use `make all`, `make check` and `make serve` (run `make help` for the full list).
-
-To refresh the source data:
-`curl -L -o data/eldamo-data.xml https://raw.githubusercontent.com/pfstrack/eldamo/master/src/data/eldamo-data.xml`
-
-## Developing in Code OSS / VS Code
-
-Open the project folder (`code-oss .` or File > Open Folder). Requirements: Python 3.10 or newer. Nothing needs installing to build; `rdflib` is optional for RDF checks.
+To generate an individual page for every entry, as used for GitHub Pages:
 
 ```bash
-python3 -m venv .venv && source .venv/bin/activate   # optional
-pip install -r requirements-dev.txt                  # optional: rdflib for tools/check_site.py
+make site-all
 ```
 
-Included editor configuration (`.vscode/`):
+The generated site is written to `site/`. GitHub Actions builds and publishes this directory when changes are pushed to the `master` branch. `rdflib` is optional and enables additional RDF parsing checks in `make check`.
 
-- **Tasks** (Terminal > Run Task, or Ctrl+Shift+B for the default build): Build database, Build site, Build site (one page per entry), Build all, Check site, Serve site, Explore a word, Database statistics, Update Eldamo data
-- **Debug configurations** for each script (Run and Debug panel)
-- **Recommended extensions** from Open VSX: Python and debugpy, SQLite Viewer (browse `data/lexicon.db`), RDF syntax highlighting for `.ttl`, and the axe Accessibility Linter
-- Settings that keep `site/` and the 30 MB XML out of search and file watching
+## Database overview
 
-### Project layout
-
-```
-docs/
-  CONVERSATION.md      handoff summary and transcript of how the project was planned and built
-data/
-  eldamo-data.xml      source data (Eldamo 0.8.14, CC BY 4.0)
-  lexicon.db           SQLite database built from it (committed so the site builds without step 1)
-lexicon/
-  build_db.py          XML -> SQLite: schema, loading, link resolution
-  build_site.py        SQLite -> static site: HTML templates, JSON-LD, Turtle, CSV, search index
-  explore.py           command-line lookups and recursive etymology queries
-  static/              style.css, site.js (theme toggle), search.js, and the CC0 Openclipart star credited on the home page
-tools/
-  check_site.py        link, search-index and RDF validation for the generated site
-site/                  generated output (git-ignored; rebuild any time)
-```
-
-### Page layout modes
-
-By default, entries with more than two links (or long notes) get their own page in `entry/`, and shorter entries are rendered in full on their letter index page in `lang/`. This keeps the site at about 3,800 files, under the 5,000-file limit of some preview hosts. For hosts without that limit (GitHub Pages, Netlify, a university server), build one page per entry:
-
-```bash
-python3 lexicon/build_site.py --all-pages    # or: make site-all, or ELDARIN_ALL_PAGES=1
-```
-
-The cutoff is the `FULL` set near the top of `build_site.py`.
-
-### Where to change things
-
-- Which languages are included, with their names, language tags and descriptions: `LANGUAGES` in `build_db.py` (keyed by Eldamo language code). Rebuild the database afterwards
-- Which word types are excluded: `EXCLUDED_SPEECH` in `build_db.py`
-- Page HTML in `build_site.py`: `page()` (shared header, navigation and footer), `build_entry()` (full entry pages), `short_entry()` (inline entries), `build_lang_pages()` (indexes) and `build_static_pages()` (home, browse, roots, search, about, accessibility, linked data)
-- Colours, fonts and themes: CSS custom properties at the top of `lexicon/static/style.css`
-- Linked-data vocabulary: `CONTEXT` and `entry_jsonld()` (JSON-LD) and `build_exports()` (Turtle, CSV, search index) in `build_site.py`
-
-After any change, run `make site check`, then reload the browser.
-
-### Publishing
-
-`site/` is plain static files with relative links, so it can be copied to any web host. For GitHub Pages, build with `--all-pages` and publish the `site/` folder (for example with a GitHub Actions workflow that runs `make site-all` and uploads `site/`).
-
-## Database design
-
-| Table | Contents |
+| Table or view | Contents |
 |---|---|
-| `languages` | 11 languages with BCP 47 language tags (`qya`, `sjn`, `art-x-telerin` ...) and a `parent_code` self-reference forming the family tree |
-| `entries` | Headwords: form, sort key, part of speech, gloss, semantic category, Eldamo status mark, notes. The primary key is Eldamo's stable page ID |
-| `attestations` | Each appearance of a word in a source, with its citation (e.g. `LotR/0377.3306`) and grammatical form |
-| `relations` | Typed links between entries: `derived_from`, `has_element`, `cognate`, `related`, `see_also`, each with its supporting citation |
+| `languages` | The 11 languages, their BCP 47 tags, and language-family relationships |
+| `entries` | Headwords, language, part of speech, gloss, category, notes, and editorial status |
+| `attestations` | Forms as cited in Tolkien's sources, with citations and grammatical information |
+| `relations` | Typed word relationships and their supporting citations |
 | `categories`, `sources` | Lookup tables for semantic categories and bibliographic sources |
-| `links` (view) | One row per distinct link, with a count of supporting citations |
+| `links` (view) | Distinct word-to-word relationships with supporting-citation counts |
 
-Eldamo records etymological links at two levels: on a word (pointing to another word by language and form) and on individual citations (pointing to another citation by its source reference). `build_db.py` indexes every citation in the file and resolves both kinds into the same `relations` table.
-
-Example: walking an etymology back to its root with a recursive query (from `explore.py`):
-
-```sql
-WITH RECURSIVE ancestry(entry_id, depth, path) AS (
-    SELECT :id, 0, ',' || :id || ','
-    UNION ALL
-    SELECT l.to_id, a.depth + 1, a.path || l.to_id || ','
-    FROM links l JOIN ancestry a ON l.from_id = a.entry_id
-    WHERE l.rel_type = 'derived_from'
-      AND instr(a.path, ',' || l.to_id || ',') = 0   -- guard against cycles
-)
-SELECT ... ;
-```
+Eldamo records links both on words and on individual citations. The Python import process resolves both kinds into the `relations` table, preserving citation evidence for each relationship.
 
 ## Linked data
 
-- Each entry has a hash identifier, kept separate from the page that describes it: `entry/<id>.html#entry` for full entries, and `lang/<page>.html#w<id>` for short entries on index pages. Each also has form and sense nodes.
-- Model: OntoLex-Lemon (`ontolex:LexicalEntry`, `ontolex:Etymon` for roots, `ontolex:Form`, `ontolex:LexicalSense`), LexInfo parts of speech, `decomp:subterm` for compound elements, and three project properties: `eld:derivedFrom`, `eld:cognateWith` and `eld:relatedTo` (defined on `linked-data.html`).
-- Every entry links to its Eldamo page with `rdfs:seeAlso`. Quenya and Sindarin link to Lexvo language IRIs.
-- IRIs are relative, so the data resolves wherever the site is hosted.
-- Full dumps: `site/data/lexicon.ttl` and `site/data/lexicon.jsonld`.
+The linked-data model uses OntoLex-Lemon, LexInfo, and the decomposition vocabulary, alongside project properties for derivation, cognacy, and relatedness. Each lexical entry has a stable identifier and links to its Eldamo source entry. The site provides full JSON-LD and Turtle exports, with relative IRIs so the data remains usable under different hosting paths.
 
-## Accessibility (WCAG 2.2 AA)
+## Accessibility
 
-See `site/accessibility.html` for the full statement. Highlights:
+The site is designed toward WCAG 2.2 AA and has an [accessibility statement](https://elfinabjurant.github.io/eldarin-etymological-lexicon/accessibility.html) describing its features, test methods, and limitations. Features include a skip link, semantic landmarks and headings, language tags on Elvish text, visible keyboard focus, labeled forms, keyboard-operable controls, responsive layouts, and search-result announcements.
 
-- `lang` attributes on every Elvish word (WCAG 3.1.2, Language of Parts)
-- The √ and ✶ symbols are hidden from screen readers and replaced by the spoken words "root" and "primitive form". Status marks are spelled out in text
-- A plain-language etymology sentence before each nested tree
-- Skip link, landmarks, logical headings, breadcrumbs and an "On this page" menu
-- Captioned data tables with header cells, inside keyboard-focusable scroll regions
-- Search results announced through an `aria-live` status message. Every page except live search works without JavaScript
-- Light and dark themes (following the system setting, with a toggle), visible focus, reduced-motion support, and reflow down to 320 px
-- Automated axe-core checks reported 0 violations in both themes on 23 sampled pages, including core pages, entries and letter indexes. Keyboard-only spot-checks cover the skip link, theme toggle and entry disclosures; the layout has been checked at 320 px with wide tables contained in their own scroll regions. Manual screen-reader testing remains to be done.
+Automated axe-core checks reported no WCAG A/AA violations on a representative sample of pages in both themes. WAVE's homepage scan reported 0 contrast errors, 8 language errors, and 1 redundant-link alert. The language errors appear to correspond to the private-use tag for Primitive Elvish (`art-x-prelv`). Keyboard checks have covered selected controls, and screen-reader testing has not yet been completed. These checks are useful but do not establish full WCAG conformance; details and known limitations are recorded on the accessibility page.
 
-Accessibility considerations and reviews 
+## Project structure
 
-Not affiliated with the Tolkien Estate. Non-commercial educational project.
+- `data/`: Eldamo source XML, SQLite database, and data attribution
+- `lexicon/`: Python database and site builders, query tool, and static assets
+- `site/`: generated website output
+- `tools/check_site.py`: generated-site link and data validation
+- `.github/workflows/pages.yml`: GitHub Pages build and deployment workflow
+
+This is a non-commercial educational project and is not affiliated with the Tolkien Estate.
