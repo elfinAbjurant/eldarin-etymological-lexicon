@@ -69,7 +69,7 @@ lexicon/
   build_db.py          XML -> SQLite: schema, loading, link resolution
   build_site.py        SQLite -> static site: HTML templates, JSON-LD, Turtle, CSV, search index
   explore.py           command-line lookups and recursive etymology queries
-  static/              style.css, site.js (theme toggle), search.js (client-side search)
+  static/              style.css, site.js (theme toggle), search.js, and the CC0 Openclipart star credited on the home page
 tools/
   check_site.py        link, search-index and RDF validation for the generated site
 site/                  generated output (git-ignored; rebuild any time)

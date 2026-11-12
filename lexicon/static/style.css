@@ -104,8 +104,12 @@ h1 .elv { font-style: normal; font-weight: 600; }
 .breadcrumbs [aria-current] { color: var(--ink); }
 
 /* Hero / home */
-.hero { padding-block: 1.5rem 1rem; border-bottom: 1px solid var(--line); margin-bottom: 1.5rem; }
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(9rem, 15rem); gap: 2rem; align-items: center; padding-block: 1.5rem 1rem; border-bottom: 1px solid var(--line); margin-bottom: 1.5rem; }
 .hero h1 { max-width: 20ch; text-wrap: balance; }
+.hero-art { width: 100%; max-width: 15rem; justify-self: center; margin: 0; text-align: center; }
+.hero-art img { display: block; width: 100%; height: auto; }
+.hero-art figcaption { margin-top: .5rem; color: var(--muted); font-size: .8rem; line-height: 1.4; }
+@media (max-width: 40rem) { .hero { grid-template-columns: minmax(0, 1fr); gap: 1rem; } .hero-art { width: 8rem; } }
 .search-form { margin-top: 1.5rem; max-width: 40rem; }
 .search-form label, .label { display: block; font-weight: 600; margin-bottom: .35rem; }
 .search-row { display: flex; gap: .5rem; flex-wrap: wrap; }

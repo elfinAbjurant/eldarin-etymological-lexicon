@@ -659,6 +659,7 @@ def build_static_pages():
     featured = [f for f in featured if f]
     body = f"""
 <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-copy">
   <p class="eyebrow">A digital humanities project</p>
   <h1 id="hero-title">The words behind the words of Middle-earth</h1>
   <p class="lede">Tolkien built his Elvish languages like a historical linguist: every Quenya and Sindarin word descends from older forms and ancient roots. This lexicon links {STATS["entries"]:,} words through {STATS["links"]:,} etymological relationships, so you can follow a word back to its origin or forward to its descendants.</p>
@@ -669,6 +670,11 @@ def build_static_pages():
       <button type="submit">Search</button>
     </div>
   </form>
+    </div>
+    <figure class="hero-art">
+        <img src="{pre}assets/christmas-star.svg" alt="A radiant eight-pointed star with white points and golden beams." width="320" height="366">
+        <figcaption><a href="https://openclipart.org/detail/96517/christmas-star">“Star” by acspike</a>, via Openclipart (CC0 1.0).</figcaption>
+    </figure>
 </section>
 
 <section aria-labelledby="stats-title" class="stats-section">
