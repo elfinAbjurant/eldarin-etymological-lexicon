@@ -53,6 +53,7 @@
       var li = el('li');
       var a = el('a', { href: 'entry/' + x[0] + '.html' });
       if (x[5] === 'root') { a.appendChild(el('span', { class: 'sym', 'aria-hidden': 'true' }, '√')); a.appendChild(el('span', { class: 'visually-hidden' }, 'root ')); }
+      else if (x[3] === 'p') { a.appendChild(el('span', { class: 'sym', 'aria-hidden': 'true' }, '✶')); a.appendChild(el('span', { class: 'visually-hidden' }, 'primitive form ')); }
       a.appendChild(el('span', { lang: L[1], class: 'elv' }, x[1]));
       li.appendChild(a);
       li.appendChild(document.createTextNode(' '));
