@@ -1,7 +1,5 @@
 # Eldarin Etymological Lexicon
 
-This is a project for Library & Information Sciences classes. I would direct anyone looking for something more seriously useful to [elfdict.com](https://www.elfdict.com).
-
 An accessible, linked-data dictionary of J.R.R. Tolkien's late-period Elvish languages (Primitive Elvish, Quenya, Sindarin, Telerin and their relatives). It focuses on how words are connected: their roots, derivations, compounds and cognates.
 
 - 7,877 dictionary entries in 11 languages
@@ -139,9 +137,10 @@ See `site/accessibility.html` for the full statement. Highlights:
 - Light and dark themes (following the system setting, with a toggle), visible focus, reduced-motion support, and reflow down to 320 px
 - Automated axe-core checks reported 0 violations in both themes on 23 sampled pages, including core pages, entries and letter indexes. Keyboard-only spot-checks cover the skip link, theme toggle and entry disclosures; the layout has been checked at 320 px with wide tables contained in their own scroll regions. Manual screen-reader testing remains to be done.
 
-## How this covers the three assignments
+## Class Assignment
 
-| Assignment | Where it is covered |
+This is a project for Library & Information Sciences classes. I would direct anyone looking for something more seriously useful to [elfdict.com](https://www.elfdict.com).
+
 |---|---|
 | 1. Basic website (Library IT) | `site/`: multi-page site with navigation, browse indexes, search, about and data pages |
 | 2. Database with Python (Library IT) | `lexicon/build_db.py` (schema design, XML → SQL loading, link resolution), `lexicon/explore.py` (recursive SQL queries), `lexicon/build_site.py` (database-driven page generation) |
