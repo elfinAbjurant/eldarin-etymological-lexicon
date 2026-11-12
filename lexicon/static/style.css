@@ -152,7 +152,7 @@ ol.word-list { list-style: decimal; padding-left: 1.5rem; }
 
 /* Letters */
 .letters ul { list-style: none; padding: 0; margin: 1rem 0 1.5rem; display: flex; flex-wrap: wrap; gap: .35rem; }
-.letters a { display: inline-flex; align-items: center; justify-content: center; min-width: 2.5rem; min-height: 2.5rem; padding: 0 .5rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); text-decoration: none; font-weight: 600; }
+.letters a { display: inline-flex; align-items: center; justify-content: center; min-width: 2.5rem; min-height: 2.5rem; padding: 0 .5rem; border: 1px solid var(--muted); border-radius: var(--radius); background: var(--surface); text-decoration: none; font-weight: 600; }
 .letters a:hover { border-color: var(--accent); }
 .letters a[aria-current="page"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 

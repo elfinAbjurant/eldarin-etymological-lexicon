@@ -135,7 +135,7 @@ See `site/accessibility.html` for the full statement. Highlights:
 - Captioned data tables with header cells, inside keyboard-focusable scroll regions
 - Search results announced through an `aria-live` status message. Every page except live search works without JavaScript
 - Light and dark themes (following the system setting, with a toggle), visible focus, reduced-motion support, and reflow down to 320 px
-- Tested with axe-core (0 violations in both themes on 23 sampled pages, including core pages, random entries and letter indexes with inline entries), keyboard-only use, and 375 px and 1280 px layouts
+- Automated axe-core checks reported 0 violations in both themes on 23 sampled pages, including core pages, entries and letter indexes. Keyboard-only spot-checks cover the skip link, theme toggle and entry disclosures; the layout has been checked at 320 px with wide tables contained in their own scroll regions. Manual screen-reader testing remains to be done.
 
 ## How this covers the three assignments
 

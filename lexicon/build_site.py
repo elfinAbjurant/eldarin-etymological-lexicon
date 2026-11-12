@@ -857,16 +857,16 @@ def build_static_pages():
 <li><strong>Language of parts (WCAG 3.1.2):</strong> every Elvish word is marked with a language tag (<code>lang="qya"</code> for Quenya, <code>lang="sjn"</code> for Sindarin). This lets assistive technology and translation tools know the text is not English.</li>
 <li><strong>Symbols explained in words:</strong> Eldamo’s √ and ✶ symbols are hidden from screen readers and replaced by the spoken words “root” and “primitive form”. Status marks such as † are always spelled out in text.</li>
 <li><strong>Color contrast (1.4.3, 1.4.11):</strong> text and interface elements meet at least 4.5:1 and 3:1 contrast in both light and dark themes.</li>
-<li><strong>Not color alone (1.4.1):</strong> links are underlined, and the current page is marked in code, not only by color.</li>
-<li><strong>Reflow and resize (1.4.4, 1.4.10):</strong> layouts adapt down to 320 pixels wide and to 200% zoom without horizontal scrolling. Wide tables scroll inside their own labeled region.</li>
+<li><strong>Not color alone (1.4.1):</strong> inline links are underlined, and the current page is marked with <code>aria-current</code> as well as color.</li>
+<li><strong>Resize and reflow (1.4.4, 1.4.10):</strong> text resizes without loss of content, and pages reflow at 320 CSS pixels without page-level horizontal scrolling. Wide tables scroll inside their own labeled region.</li>
 </ul>
 <h3>Operable</h3>
 <ul>
 <li><strong>Keyboard access (2.1.1):</strong> all features, including search, theme switching and expandable sections, work with a keyboard alone.</li>
 <li><strong>Bypass blocks (2.4.1):</strong> a “Skip to main content” link is the first item on every page.</li>
-<li><strong>Visible focus (2.4.7, 2.4.11):</strong> a thick, high-contrast outline shows which element has focus.</li>
-<li><strong>Navigation (2.4.5, 2.4.8):</strong> several ways to find a word (search, browse by language, the root index), plus breadcrumbs and an “On this page” menu on longer entries.</li>
-<li><strong>Reduced motion (2.3.3):</strong> animations and smooth scrolling are turned off when your system asks for reduced motion.</li>
+<li><strong>Focus visible and not obscured (2.4.7, 2.4.11):</strong> a high-contrast outline shows keyboard focus, and page content does not cover focused controls.</li>
+<li><strong>Multiple ways (2.4.5):</strong> words can be found through search, language indexes or the root index.</li>
+<li><strong>Additional AAA enhancements:</strong> breadcrumbs and an “On this page” menu help orient readers (2.4.8); animations and smooth scrolling are disabled when reduced motion is requested (2.3.3).</li>
 </ul>
 <h3>Understandable</h3>
 <ul>
@@ -885,14 +885,15 @@ def build_static_pages():
 <section aria-labelledby="testing"><h2 id="testing">How it was tested</h2>
 <ul>
 <li>Automated checks with the axe-core accessibility engine on a sample of pages, in both themes.</li>
-<li>Keyboard-only navigation of every page type.</li>
-<li>Layout checks at 320, 375 and 1280 pixels wide.</li>
+<li>Keyboard spot-checks of the skip link, theme toggle and entry disclosure controls.</li>
+<li>Layout checks at 320 CSS pixels; wide tables scroll within their labeled regions.</li>
 </ul>
 </section>
 
 <section aria-labelledby="limits"><h2 id="limits">Known limitations</h2>
 <ul>
 <li>Screen readers have no Elvish voices. A language tag tells software the word is not English, but most screen readers will still read it with an English voice, and the private-use tags (like <code>art-x-telerin</code>) are ignored by some tools.</li>
+<li>Manual testing with screen readers has not yet been completed.</li>
 <li>Commentary in the “Notes” sections comes from Eldamo. Elvish words inside it are tagged only when they link to an entry in this lexicon.</li>
 <li>Some very large entries (common roots) produce long lists. The “On this page” menu and headings help you move through them.</li>
 </ul>
