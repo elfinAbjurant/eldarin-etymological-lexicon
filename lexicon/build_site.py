@@ -662,7 +662,7 @@ def build_static_pages():
     <div class="hero-copy">
   <p class="eyebrow">A digital humanities project</p>
   <h1 id="hero-title">The words behind the words of Middle-earth</h1>
-  <p class="lede">Tolkien built his Elvish languages like a historical linguist: every Quenya and Sindarin word descends from older forms and ancient roots. This lexicon links {STATS["entries"]:,} words through {STATS["links"]:,} etymological relationships, so you can follow a word back to its origin or forward to its descendants.</p>
+    <p class="lede">Tolkien built his Elvish languages like a <em>historical linguist</em>: every Quenya and Sindarin word descends from older forms and ancient roots. This lexicon links <strong>{STATS["entries"]:,} words</strong> through {STATS["links"]:,} etymological relationships, so you can follow a word back to its origin or forward to its descendants.</p>
   <form class="search-form" role="search" action="search.html" method="get">
     <label for="home-q">Search Elvish words or English meanings</label>
     <div class="search-row">
